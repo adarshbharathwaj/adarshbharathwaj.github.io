@@ -21,8 +21,13 @@
 }
 
 h1.cyber-text {
-    font-style: italic;
-    color: #0ff;
+    font-style: bold;
+    color: #fff;
+}
+
+p.cyber-text {
+    font-style: normal;
+    color: #fff;
 }
 
 body {

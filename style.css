@@ -6,6 +6,22 @@ body {
   margin-top: 10%;
 }
 
+@font-face {
+    font-family: Cyber;
+    src: url('Cyber.ttf');
+}
+@font-face {
+    font-family: Cyber;
+    font-weight: bold;
+    src: url('Cyber-Bold.ttf');
+}
+@font-face {
+    font-family: Cyber;
+    font-style: italic;
+    src: url('Cyber-BoldRustique.ttf');
+}
+
 h1 {
-  color: #00ffcc;
+    font-family: Cyber, sans-serif;
+    color: #00ffcc;
 }

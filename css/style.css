@@ -105,13 +105,14 @@ main {
     height: 32px;
     image-rendering: pixelated;
     background-repeat: no-repeat;
-    background-size: contain;
-    background-position: left center;
+    background-size: auto 100%;
+    background-position: 0 0;
     background-image: url('../assets/images/idle-sheet.png');
     transition: transform 0.2s cubic-bezier(0.25, 1.25, 0.5, 1);
     z-index: 1001;
     flex-shrink: 0;
     position: relative;
+    overflow: hidden;
     will-change: background-position;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
@@ -162,5 +163,20 @@ main {
     .nav-character {
         width: 24px;
         height: 24px;
+    }
+
+    @keyframes idleAnim {
+        from  {background-position: 0 0;}
+        to { background-position: -48px 0;}
+    }
+
+    @keyframes anim1 {
+        from  {background-position: 0 0;}
+        to { background-position: -120px 0;}
+    }
+
+    @keyframes anim2 {
+        from  {background-position: 0 0;}
+        to { background-position: -312px 0;}
     }
 }

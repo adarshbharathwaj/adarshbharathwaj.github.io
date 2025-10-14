@@ -56,14 +56,19 @@ function playRandomAnimation() {
     const anims = ['anim1', 'anim2'];
     const chosenAnim = anims[Math.floor(Math.random() * anims.length)];
 
-    char.classList.remove('idle');
+    char.classList.remove('idle', 'anim1', 'anim2');
+    void char.offsetWidth;
+
     char.classList.add(chosenAnim);
 
-    char.addEventListener('animationend', function handler() {
+    function handler() {
         char.classList.remove(chosenAnim);
         char.classList.add('idle');
         char.removeEventListener('animationend', handler);
-    })
+    }
+
+
+    char.addEventListener('animationend', handler);
 }
 
 function scheduleNextAnimation() {
@@ -74,4 +79,4 @@ function scheduleNextAnimation() {
     }, delay);
 }
 
-scheduleNextAnimation();
+setTimeout(scheduleNextAnimation, 3000);

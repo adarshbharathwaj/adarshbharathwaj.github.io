@@ -108,17 +108,17 @@ main {
 
 .nav-character.idle {
     background-image: url('../assets/images/idle-sheet.png');
-    animation: idleAnim 0.6s steps(2) infinite;
+    animation: idleAnim 1s steps(2) infinite;
 }
 
 .nav-character.anim1 {
     background-image: url('../assets/images/anim1-sheet.png');
-    animation: anim1 0.8s steps(5) 1;
+    animation: anim1 2.5s steps(5) 1;
 }
 
 .nav-character.anim2 {
     background-image: url('../assets/images/anim2-sheet.png');
-    animation: anim2 0.8s steps(13) 1;
+    animation: anim2 6.5s steps(13) 1;
 }
 
 @keyframes idleAnim {

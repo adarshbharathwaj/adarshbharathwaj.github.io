@@ -117,22 +117,29 @@ main {
     -webkit-backface-visibility: hidden;
     transform: translateZ(0);
     -webkit-transform: translateZ(0);
+    animation-fill-mode: forwards;
 }
 
 .nav-character.idle {
     background-image: url('../assets/images/idle-sheet.png');
+    width: 32px;
+    height: 32px;
     background-size: 64px 32px;
     animation: idleAnim 1s steps(2) infinite;
 }
 
 .nav-character.anim1 {
     background-image: url('../assets/images/anim1-sheet.png');
+    width: 32px;
+    height: 32px;
     background-size: 160px 32px;
     animation: anim1 5s steps(5) 1 forwards;
 }
 
 .nav-character.anim2 {
     background-image: url('../assets/images/anim2-sheet.png');
+    width: 32px;
+    height: 32px;
     background-size: 416px 32px;
     animation: anim2 13s steps(13) 1 forwards;
 }

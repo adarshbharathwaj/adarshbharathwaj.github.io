@@ -51,3 +51,27 @@ document.querySelectorAll('.navbar a').forEach( anchor => {
         requestAnimationFrame(animateScroll);
     });
 });
+
+function playRandomAnimation() {
+    const anims = ['anim1', 'anim2'];
+    const chosenAnim = anims[Math.floor(Math.random() * anims.length)];
+
+    char.classList.remove('idle');
+    char.classList.add(chosenAnim);
+
+    char.addEventListener('animationend', function handler() {
+        char.classList.remove(chosenAnim);
+        char.classList.add('idle');
+        char.removeEventListener('animationend', handler);
+    })
+}
+
+function scheduleNextAnimation() {
+    const delay = Math.random() * 4000 + 4000;
+    setTimeout( () => {
+        playRandomAnimation();
+        scheduleNextAnimation();
+    }, delay);
+}
+
+scheduleNextAnimation();

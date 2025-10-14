@@ -25,7 +25,7 @@ function updateChar() {
 
 document.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowRight') velocity = speed;
-    if (e.key == 'ArrowLeft') velocity = -speed;
+    if (e.key === 'ArrowLeft') velocity = -speed;
     char.style.transform = `translateX(${charPos}px)`;
 });
 
@@ -66,6 +66,7 @@ function playRandomAnimation() {
     if (char.classList.contains(chosenAnim)) return;
 
     char.classList.remove('idle', 'anim1', 'anim2');
+
     void char.offsetWidth;
 
     char.classList.add(chosenAnim);
@@ -88,9 +89,23 @@ function scheduleNextAnimation() {
     }, delay);
 }
 
+function preloadImages() {
+    const images = [
+        '../assets/images/idle-sheet.png',
+        '../assets/images/anim1-sheet.png',
+        '../assets/images/anim2-sheet.png'
+    ];
+
+    images.forEach(src => {
+        const img = new Image();
+        img.src = src;
+    });
+}
+
 window.addEventListener('DOMContentLoaded', () => {
+    preloadImages();
     char.classList.add('idle');
-    char.style.transform = 'translateX(0px)';
+    char.style.transform = 'translateX(0px) translateZ(0px)';
     updateChar();
     setTimeout(scheduleNextAnimation, 3000);
 });

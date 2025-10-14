@@ -96,14 +96,20 @@ main {
     transform: scale(1.1);
 }
 
+.navbar .nav-character {
+    margin-right: 20px;
+}
+
 .nav-character {
     width: 32px;
     height: 32px;
     image-rendering: pixelated;
     background-repeat: no-repeat;
-    background-position: 0 0;
-    margin-right: 10px;
+    background-size: contain;
+    background-position: center;
+    background-image: url('../assets/images/idle-character.png');
     transition: transform 0.2s cubic-bezier(0.25, 1.25, 0.5, 1);
+    z-index: 1001;
 }
 
 .nav-character.idle {
@@ -113,12 +119,12 @@ main {
 
 .nav-character.anim1 {
     background-image: url('../assets/images/anim1-sheet.png');
-    animation: anim1 2.5s steps(5) 1;
+    animation: anim1 5s steps(5) 1;
 }
 
 .nav-character.anim2 {
     background-image: url('../assets/images/anim2-sheet.png');
-    animation: anim2 6.5s steps(13) 1;
+    animation: anim2 13s steps(13) 1;
 }
 
 @keyframes idleAnim {

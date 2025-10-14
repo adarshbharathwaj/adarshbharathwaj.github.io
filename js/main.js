@@ -3,6 +3,9 @@ console.log("Website loaded successfully!");
 const main = document.querySelector('main');
 const char = document.querySelector('.nav-character');
 
+char.classList.add('idle');
+char.style.transform = 'translateX(0px)';
+
 let charPos = 0;
 let velocity = 0;
 const friction = 0.8;

@@ -90,9 +90,10 @@ main {
 }
 
 .nav-character {
-    width: 60px;
-    height: 60px;
-    background: url('../assets/images/PLACEHOLDER.png') center/contain no-repeat;
+    width: 64px;
+    height: 64px;
+    background: url('../assets/images/idle-character.png') center/contain no-repeat;
+    image-rendering: pixelated;
     transition: transform 0.1s linear;
 }
 
@@ -107,7 +108,7 @@ main {
     }
 
     .nav-character {
-        width: 40px;
-        height: 40px;
+        width: 48px;
+        height: 48px;
     }
 }

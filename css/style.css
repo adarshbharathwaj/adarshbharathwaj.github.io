@@ -105,7 +105,6 @@ main {
     height: 32px;
     image-rendering: pixelated;
     background-repeat: no-repeat;
-    background-size: auto 100%;
     background-position: 0 0;
     background-image: url('../assets/images/idle-sheet.png');
     transition: transform 0.2s cubic-bezier(0.25, 1.25, 0.5, 1);
@@ -122,16 +121,19 @@ main {
 
 .nav-character.idle {
     background-image: url('../assets/images/idle-sheet.png');
+    background-size: 64px 32px;
     animation: idleAnim 1s steps(2) infinite;
 }
 
 .nav-character.anim1 {
     background-image: url('../assets/images/anim1-sheet.png');
+    background-size: 160px 32px;
     animation: anim1 5s steps(5) 1 forwards;
 }
 
 .nav-character.anim2 {
     background-image: url('../assets/images/anim2-sheet.png');
+    background-size: 416px 32px;
     animation: anim2 13s steps(13) 1 forwards;
 }
 

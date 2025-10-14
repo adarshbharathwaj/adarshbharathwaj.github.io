@@ -1,5 +1,6 @@
 console.log("Website loaded successfully!");
 
+const main = document.querySelector('main');
 const char = document.querySelector('.nav-character');
 
 let charPos = 0;

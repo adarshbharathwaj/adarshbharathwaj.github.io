@@ -10,10 +10,14 @@ let charPos = 0;
 let velocity = 0;
 const friction = 0.8;
 const speed = 2;
+const maxOffset = 100;
 
 function updateChar() {
     velocity *= friction;
     charPos += velocity;
+
+    charPos = Math.max(-maxOffset, Math.min(maxOffset, charPos));
+
     char.style.transform = `translate(${charPos}px)`;
     requestAnimationFrame(updateChar);
 }
@@ -59,12 +63,14 @@ function playRandomAnimation() {
     const anims = ['anim1', 'anim2'];
     const chosenAnim = anims[Math.floor(Math.random() * anims.length)];
 
+    if (char.classList.contains(chosenAnim)) return;
+
     char.classList.remove('idle', 'anim1', 'anim2');
     void char.offsetWidth;
 
     char.classList.add(chosenAnim);
 
-    function handler() {
+    const handler = () => {
         char.classList.remove(chosenAnim);
         char.classList.add('idle');
         char.removeEventListener('animationend', handler);
@@ -82,4 +88,9 @@ function scheduleNextAnimation() {
     }, delay);
 }
 
-setTimeout(scheduleNextAnimation, 3000);
+window.addEventListener('DOMContentLoaded', () => {
+    char.classList.add('idle');
+    char.style.transform = 'translateX(0px)';
+    updateChar();
+    setTimeout(scheduleNextAnimation, 3000);
+});

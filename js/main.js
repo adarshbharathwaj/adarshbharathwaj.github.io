@@ -10,13 +10,10 @@ let charPos = 0;
 let velocity = 0;
 const friction = 0.8;
 const speed = 2;
-const maxOffset = 100;
 
 function updateChar() {
     velocity *= friction;
     charPos += velocity;
-
-    charPos = Math.max(-maxOffset, Math.min(maxOffset, charPos));
 
     char.style.transform = `translate(${charPos}px)`;
     requestAnimationFrame(updateChar);

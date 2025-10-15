@@ -53,10 +53,24 @@ main {
     scroll-snap-align: start;
     height: 100vh;
     display: flex;
-    justify-content: center;
+    flex-direction: column;;
     align-items: center;
-    font-size: 2.5rem;
+    justify-content: flex-start;
+    padding-top: 20vh;
     text-align: center;
+}
+
+.section-title {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color:#00ffc8;
+}
+
+.section-text {
+    max-width: 800px;
+    font-size: 1.2rem;
+    line-height: 1.6;
+    color: #b5fff1;
 }
 
 .navbar {

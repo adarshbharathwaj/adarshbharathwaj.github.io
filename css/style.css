@@ -56,7 +56,7 @@ main::-webkit-scrollbar {
 }
 
 main {
-    height: 100vh;
+    height: var(--vh);
     overflow-y: auto;
     scroll-snap-type: y mandatory;
     -webkit-overflow-scrolling: touch;
@@ -66,12 +66,12 @@ main {
 
 .snap-section {
     scroll-snap-align: start;
-    height: 100vh;
+    height: var(--vh);
     display: flex;
     flex-direction: column;;
     align-items: center;
     justify-content: flex-start;
-    padding-top: 20vh;
+    padding-top: 20%;
     text-align: center;
 }
 
@@ -130,8 +130,8 @@ main {
 }
 
 .nav-character {
-    width: 32px;
-    height: 32px;
+    width: clamp(24px, 3vw, 32px);
+    height: clamp(24px, 3vw, 32px);
     image-rendering: pixelated;
     background-repeat: no-repeat;
     background-position: 0 0;
@@ -151,70 +151,49 @@ main {
 
 .nav-character.idle {
     background-image: url('../assets/images/idle-sheet.png');
-    width: 32px;
-    height: 32px;
+    width: clamp(24px, 3vw, 32px);
+    height: clamp(24px, 3vw, 32px);
     background-size: 64px 32px;
     animation: idleAnim 1s steps(2) infinite;
 }
 
 .nav-character.anim1 {
     background-image: url('../assets/images/anim1-sheet.png');
-    width: 32px;
-    height: 32px;
+    width: clamp(24px, 3vw, 32px);
+    height: clamp(24px, 3vw, 32px);
     background-size: 160px 32px;
     animation: anim1 5s steps(5) 1 forwards;
 }
 
 .nav-character.anim2 {
     background-image: url('../assets/images/anim2-sheet.png');
-    width: 32px;
-    height: 32px;
+    width: clamp(24px, 3vw, 32px);
+    height: clamp(24px, 3vw, 32px);
     background-size: 416px 32px;
     animation: anim2 13s steps(13) 1 forwards;
 }
 
 @keyframes idleAnim {
     from  {background-position: 0 0;}
-    to { background-position: -64px 0;}
+    to { background-position: -100%;}
 }
 
 @keyframes anim1 {
     from  {background-position: 0 0;}
-    to { background-position: -160px 0;}
+    to { background-position: -400%;}
 }
 
 @keyframes anim2 {
     from  {background-position: 0 0;}
-    to { background-position: -416px 0;}
+    to { background-position: -1200%;}
 }
 
-@media (max-width: 768px) {
-    .navbar ul {
-        gap: 15px;
-    }
+:root {
+    --vh: 100%;
+}
 
-    .snap-section {
-        font-size: 1.5rem;
-        padding: 0 20px;
-    }
-
-    .nav-character {
-        width: 24px;
-        height: 24px;
-    }
-
-    @keyframes idleAnim {
-        from  {background-position: 0 0;}
-        to { background-position: -48px 0;}
-    }
-
-    @keyframes anim1 {
-        from  {background-position: 0 0;}
-        to { background-position: -120px 0;}
-    }
-
-    @keyframes anim2 {
-        from  {background-position: 0 0;}
-        to { background-position: -312px 0;}
+@supports (--webkit-touch-callout: none) {
+    :root {
+        --vh: 100svh;
     }
 }

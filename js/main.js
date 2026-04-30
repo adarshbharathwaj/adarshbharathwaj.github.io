@@ -151,22 +151,36 @@ function pointsToPathD(points, viewW, viewH, pad) {
     const mapped = points.map(([x, y]) => [x * scale + offX, y * scale + offY]);
     if (mapped.length === 0) return '';
     if (mapped.length === 1) {
-        return `M ${mapped[0][0].toFixed(2)} ${mapped[0][1].toFixed(2)}`;
+        return `M ${mapped[0][0].toFixed(3)} ${mapped[0][1].toFixed(3)}`;
     }
-    // Smooth via quadratic Beziers through segment midpoints: each sample is a
-    // control point, and the curve passes through the midpoint of consecutive
-    // samples — gives C1-continuity so the stroke reads as one flowing curve.
-    let d = `M ${mapped[0][0].toFixed(2)} ${mapped[0][1].toFixed(2)} `;
-    for (let i = 1; i < mapped.length - 1; i++) {
-        const [cx, cy] = mapped[i];
-        const [nx, ny] = mapped[i + 1];
-        const mx = (cx + nx) / 2;
-        const my = (cy + ny) / 2;
-        d += `Q ${cx.toFixed(2)} ${cy.toFixed(2)} ${mx.toFixed(2)} ${my.toFixed(2)} `;
+    if (mapped.length === 2) {
+        return `M ${mapped[0][0].toFixed(3)} ${mapped[0][1].toFixed(3)} ` +
+               `L ${mapped[1][0].toFixed(3)} ${mapped[1][1].toFixed(3)}`;
     }
-    const last = mapped[mapped.length - 1];
-    d += `L ${last[0].toFixed(2)} ${last[1].toFixed(2)}`;
-    return d;
+    // Catmull-Rom -> cubic-Bezier conversion. The resulting curve passes
+    // through *every* sample point (unlike Q-through-midpoints which cuts
+    // corners), so tight zeta loops are followed faithfully and the stroke
+    // reads as one smooth analytic curve rather than a sampled polyline.
+    //
+    //   For Catmull-Rom segment from P1 to P2 with neighbors P0, P3:
+    //     C1 = P1 + (P2 - P0) / 6
+    //     C2 = P2 - (P3 - P1) / 6
+    //   then `C C1 C2 P2` continues the cubic spline.
+    let d = `M ${mapped[0][0].toFixed(3)} ${mapped[0][1].toFixed(3)} `;
+    for (let i = 0; i < mapped.length - 1; i++) {
+        const p0 = mapped[i === 0 ? 0 : i - 1];
+        const p1 = mapped[i];
+        const p2 = mapped[i + 1];
+        const p3 = mapped[i + 2 < mapped.length ? i + 2 : mapped.length - 1];
+        const c1x = p1[0] + (p2[0] - p0[0]) / 6;
+        const c1y = p1[1] + (p2[1] - p0[1]) / 6;
+        const c2x = p2[0] - (p3[0] - p1[0]) / 6;
+        const c2y = p2[1] - (p3[1] - p1[1]) / 6;
+        d += `C ${c1x.toFixed(3)} ${c1y.toFixed(3)} ` +
+             `${c2x.toFixed(3)} ${c2y.toFixed(3)} ` +
+             `${p2[0].toFixed(3)} ${p2[1].toFixed(3)} `;
+    }
+    return d.trim();
 }
 
 if (transitionSvg && typeof Vivus !== 'undefined') {
@@ -174,7 +188,7 @@ if (transitionSvg && typeof Vivus !== 'undefined') {
     // loops at the first ~5 nontrivial zeros, drawn as a single SVG <path>.
     // Vivus then handles the dash-based reveal in manual mode, with ease
     // path-timing for a smoother stroke than raw linear scrubbing.
-    const zetaPoints = computeZetaSamples(700, 0, 32, 80);
+    const zetaPoints = computeZetaSamples(1500, 0, 32, 80);
     transitionPath = document.createElementNS(SVG_NS, 'path');
     transitionPath.setAttribute('class', 'transition-path');
     transitionPath.setAttribute('d', pointsToPathD(zetaPoints, 100, 60, 3));

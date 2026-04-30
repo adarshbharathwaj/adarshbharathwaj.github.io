@@ -66,7 +66,6 @@ main {
 
 .snap-section {
     scroll-snap-align: start;
-    scroll-snap-stop: always;
     height: var(--vh);
     display: flex;
     flex-direction: column;;
@@ -78,7 +77,6 @@ main {
 
 .transition-pause {
     scroll-snap-align: start;
-    scroll-snap-stop: always;
     height: var(--vh);
 }
 
@@ -219,6 +217,67 @@ main {
 
 body.no-navbar main {
     height: var(--vh);
+}
+
+body.locked main {
+    filter: blur(18px);
+    pointer-events: none;
+    user-select: none;
+}
+
+.password-gate {
+    position: fixed;
+    inset: 0;
+    z-index: 2500;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(10, 10, 10, 0.55);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    padding: 1rem;
+}
+
+body.locked .password-gate {
+    display: flex;
+}
+
+.password-gate-card {
+    background: #0a0a0a;
+    border: 2px solid #00ffc8;
+    box-shadow: 0 0 24px rgba(0, 255, 200, 0.45);
+    padding: clamp(20px, 4vw, 40px);
+    text-align: center;
+    max-width: 90vw;
+}
+
+.password-gate-card .section-title {
+    margin-bottom: 0.5rem;
+}
+
+.password-gate-card input {
+    background: #0a0a0a;
+    border: 1px solid #00ffc8;
+    color: #00ffc8;
+    font-family: 'Cyber', sans-serif;
+    font-size: clamp(1rem, 2vw + 0.4rem, 1.4rem);
+    padding: 0.5em 1em;
+    margin-top: 1rem;
+    width: clamp(180px, 60vw, 280px);
+    outline: none;
+    text-align: center;
+    letter-spacing: 0.05em;
+}
+
+.password-gate-card input:focus {
+    border-color: #ff0066;
+    box-shadow: 0 0 10px rgba(255, 0, 102, 0.55);
+}
+
+.password-error {
+    color: #ff0066;
+    min-height: 1.4em;
+    margin: 0.6rem 0 0;
 }
 
 .transition-overlay {

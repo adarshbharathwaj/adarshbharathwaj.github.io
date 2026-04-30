@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="../css/style.css">
 </head>
 
-<body class="no-navbar">
+<body class="no-navbar locked">
   <main>
     <section class="snap-section">
       <div class="section-content">
@@ -27,5 +27,45 @@
       </div>
     </section>
   </main>
+
+  <div class="password-gate" role="dialog" aria-modal="true" aria-labelledby="password-gate-title">
+    <div class="password-gate-card">
+      <h1 id="password-gate-title" class="section-title pixel-text">Locked</h1>
+      <p class="cyber-text">Hint: what's the word of the day?</p>
+      <input id="password-input" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="password" />
+      <p id="password-error" class="cyber-text password-error" aria-live="polite"></p>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const PASSWORD = 'paean';
+      const body = document.body;
+      const input = document.getElementById('password-input');
+      const error = document.getElementById('password-error');
+
+      function tryUnlock() {
+        if (input.value.trim().toLowerCase() === PASSWORD) {
+          body.classList.remove('locked');
+          error.textContent = '';
+        } else {
+          error.textContent = 'Nope. Try again.';
+          input.value = '';
+        }
+      }
+
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          tryUnlock();
+        } else {
+          error.textContent = '';
+        }
+      });
+
+      // Focus once the gate paints.
+      requestAnimationFrame(() => input.focus());
+    })();
+  </script>
 </body>
 </html>

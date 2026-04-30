@@ -47,7 +47,7 @@ function getBounds() {
     if (navLinks.length === 0) return { minPos: 0, maxPos: 0 };
     const first = navLinks[0];
     const last = navLinks[navLinks.length - 1];
-    const padding = 4;
+    const padding = 40;
     const charWidth = char.offsetWidth;
     const charLeft = char.offsetLeft;
     const minPos = first.offsetLeft - padding - charLeft;
@@ -55,10 +55,14 @@ function getBounds() {
     return { minPos, maxPos };
 }
 
-function centerOnFirstLink() {
+function spawnSprite() {
     if (navLinks.length === 0) return;
     const first = navLinks[0];
-    charPos = first.offsetLeft + first.offsetWidth / 2 - char.offsetWidth / 2 - char.offsetLeft;
+    const gap = 12;
+    charPos = first.offsetLeft - gap - char.offsetWidth - char.offsetLeft;
+    const { minPos, maxPos } = getBounds();
+    if (charPos < minPos) charPos = minPos;
+    if (charPos > maxPos) charPos = maxPos;
     char.style.transform = `translate3d(${charPos}px, 0, 0)`;
 }
 
@@ -102,10 +106,7 @@ function updateChar() {
 
 const transitionOverlay = document.querySelector('.transition-overlay');
 const transitionPath = document.querySelector('.transition-path');
-const TRANSITION_DRAW_MS = 700;
-const TRANSITION_HOLD_MS = 200;
 let transitionPathLength = 0;
-let transitionTimeout = null;
 
 // Compute a partial sum of the Riemann zeta function on the critical line:
 //   zeta(1/2 + i t) ≈ sum_{n=1..N} 1/n^(1/2 + i t)
@@ -163,28 +164,52 @@ if (transitionPath) {
     transitionPath.style.strokeDashoffset = transitionPathLength;
 }
 
-function playTransition() {
-    if (!transitionPath || !transitionOverlay) return;
-    if (transitionTimeout !== null) {
-        clearTimeout(transitionTimeout);
-        transitionTimeout = null;
-    }
-    transitionPath.style.transition = 'none';
-    transitionPath.style.strokeDashoffset = transitionPathLength;
-    void transitionPath.getBoundingClientRect();
-    transitionOverlay.classList.add('active');
-    transitionPath.style.transition = `stroke-dashoffset ${TRANSITION_DRAW_MS}ms ease-in-out`;
-    transitionPath.style.strokeDashoffset = '0';
-    transitionTimeout = setTimeout(() => {
-        transitionOverlay.classList.remove('active');
-        transitionTimeout = null;
-    }, TRANSITION_DRAW_MS + TRANSITION_HOLD_MS);
-}
-
 function smoothScrollTo(target) {
-    playTransition();
     target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
+
+// Scrubbed line animation driven by scrollTop.
+//
+// Layout: [section][pause][section][pause]... — every snap-point is one viewport tall.
+// As scrollTop animates between adjacent snap points (driven by mandatory snap),
+// `unit = scrollTop / vh` ticks 0 -> 1 -> 2 -> ... and `frac = unit - floor(unit)`
+// is the within-step progress. Even floor(unit) means we're transitioning from a
+// section into a pause (line draws); odd means pause into next section (line fades).
+function updateLineFromScroll() {
+    if (!transitionPath || !transitionOverlay) return;
+    const vh = main.clientHeight;
+    if (vh === 0) return;
+    const scrollTop = main.scrollTop;
+    const unit = scrollTop / vh;
+    const step = Math.floor(unit);
+    const frac = unit - step;
+    const drawing = (step % 2) === 0;
+
+    let progress, opacity;
+    if (drawing) {
+        // section -> pause: line strokes in
+        progress = frac;
+        opacity = Math.min(frac * 3, 1);
+    } else {
+        // pause -> next section: line is full, fades out
+        progress = 1;
+        opacity = Math.max(1 - frac * 1.6, 0);
+    }
+
+    transitionPath.style.strokeDashoffset = transitionPathLength * (1 - progress);
+    transitionOverlay.style.opacity = opacity;
+}
+
+let scrollRafScheduled = false;
+main.addEventListener('scroll', () => {
+    if (!scrollRafScheduled) {
+        scrollRafScheduled = true;
+        requestAnimationFrame(() => {
+            updateLineFromScroll();
+            scrollRafScheduled = false;
+        });
+    }
+}, { passive: true });
 
 function activateCurrentLink() {
     const link = getCurrentLink();
@@ -272,7 +297,8 @@ function preloadImages() {
 window.addEventListener('DOMContentLoaded', () => {
     preloadImages();
     char.classList.add('idle');
-    centerOnFirstLink();
+    spawnSprite();
+    updateLineFromScroll();
     requestAnimationFrame(updateChar);
     setTimeout(scheduleNextAnimation, 3000);
 });

@@ -66,6 +66,7 @@ main {
 
 .snap-section {
     scroll-snap-align: start;
+    scroll-snap-stop: always;
     height: var(--vh);
     display: flex;
     flex-direction: column;;
@@ -73,6 +74,12 @@ main {
     justify-content: center;
     padding-top: 0 clamp(20px, 4vw, 60px);
     text-align: center;
+}
+
+.transition-pause {
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    height: var(--vh);
 }
 
 .section-title {
@@ -220,11 +227,6 @@ body.no-navbar main {
     pointer-events: none;
     z-index: 1500;
     opacity: 0;
-    transition: opacity 180ms ease-out;
-}
-
-.transition-overlay.active {
-    opacity: 1;
 }
 
 .transition-overlay svg {

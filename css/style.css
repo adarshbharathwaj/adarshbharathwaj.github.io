@@ -202,8 +202,8 @@ main {
 
 .surprise-image {
     display: block;
-    max-width: 95vw;
-    max-height: 90vh;
+    max-width: 100vw;
+    max-height: 100vh;
     width: auto;
     height: auto;
     margin: 0 auto;

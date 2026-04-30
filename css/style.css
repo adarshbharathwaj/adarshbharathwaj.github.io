@@ -200,17 +200,14 @@ main {
     50%      { transform: rotate(45deg) translate(6px, 6px); }
 }
 
-.surprise-image-stub {
-    width: clamp(200px, 50vw, 480px);
-    height: clamp(200px, 50vw, 480px);
-    border: 2px dashed #00ffc8;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #00ffc8;
-    font-family: 'Cyber', sans-serif;
-    image-rendering: pixelated;
+.surprise-image {
+    display: block;
+    max-width: min(80vw, 600px);
+    max-height: 75vh;
+    width: auto;
+    height: auto;
     margin: 0 auto;
+    image-rendering: auto;
 }
 
 body.no-navbar main {

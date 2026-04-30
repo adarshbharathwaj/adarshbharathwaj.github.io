@@ -117,7 +117,7 @@ document.addEventListener('keydown', (e) => {
         typedBuffer = (typedBuffer + e.key.toLowerCase()).slice(-SURPRISE_WORD.length);
         if (typedBuffer === SURPRISE_WORD) {
             typedBuffer = '';
-            window.location.href = 'surprise.html';
+            window.location.href = 'surprise/';
         }
     }
 });

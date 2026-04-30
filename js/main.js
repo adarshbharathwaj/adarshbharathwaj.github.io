@@ -44,13 +44,22 @@ function setMovementState(moving) {
 }
 
 function getBounds() {
-    const navWidth = navbar.getBoundingClientRect().width;
+    if (navLinks.length === 0) return { minPos: 0, maxPos: 0 };
+    const first = navLinks[0];
+    const last = navLinks[navLinks.length - 1];
+    const padding = 4;
     const charWidth = char.offsetWidth;
-    const naturalOffset = char.offsetLeft;
-    const padding = 8;
-    const minPos = padding - naturalOffset;
-    const maxPos = navWidth - charWidth - padding - naturalOffset;
+    const charLeft = char.offsetLeft;
+    const minPos = first.offsetLeft - padding - charLeft;
+    const maxPos = last.offsetLeft + last.offsetWidth + padding - charWidth - charLeft;
     return { minPos, maxPos };
+}
+
+function centerOnFirstLink() {
+    if (navLinks.length === 0) return;
+    const first = navLinks[0];
+    charPos = first.offsetLeft + first.offsetWidth / 2 - char.offsetWidth / 2 - char.offsetLeft;
+    char.style.transform = `translate3d(${charPos}px, 0, 0)`;
 }
 
 function getCurrentLink() {
@@ -181,7 +190,7 @@ function preloadImages() {
 window.addEventListener('DOMContentLoaded', () => {
     preloadImages();
     char.classList.add('idle');
-    char.style.transform = 'translate3d(0, 0, 0)';
+    centerOnFirstLink();
     requestAnimationFrame(updateChar);
     setTimeout(scheduleNextAnimation, 3000);
 });

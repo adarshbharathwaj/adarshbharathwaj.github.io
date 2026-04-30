@@ -13,6 +13,7 @@ const keys = { left: false, right: false };
 let activeLink = null;
 let isMoving = false;
 let currentAnimHandler = null;
+let animTimer = null;
 
 function clearAnimHandler() {
     if (currentAnimHandler) {
@@ -21,15 +22,24 @@ function clearAnimHandler() {
     }
 }
 
+function cancelScheduledAnimation() {
+    if (animTimer !== null) {
+        clearTimeout(animTimer);
+        animTimer = null;
+    }
+}
+
 function setMovementState(moving) {
     if (moving === isMoving) return;
     isMoving = moving;
     if (moving) {
         clearAnimHandler();
+        cancelScheduledAnimation();
         char.classList.remove('idle', 'anim1', 'anim2');
     } else {
         char.classList.remove('anim1', 'anim2');
         char.classList.add('idle');
+        scheduleNextAnimation();
     }
 }
 
@@ -82,31 +92,14 @@ function updateChar() {
 }
 
 function smoothScrollTo(target) {
-    const start = main.scrollTop;
-    const end = target.offsetTop;
-    const duration = 500;
-    const startTime = performance.now();
-    function animateScroll(currentTime) {
-        const elapsed = currentTime - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        const ease = progress < 0.5
-            ? 4 * progress * progress * progress
-            : 1 - Math.pow(-2 * progress + 2, 3) / 2;
-        main.scrollTop = start + (end - start) * ease;
-        if (elapsed < duration) requestAnimationFrame(animateScroll);
-    }
-    requestAnimationFrame(animateScroll);
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function activateCurrentLink() {
     const link = getCurrentLink();
-    if (!link) {
-        console.log('[ArrowUp] no link resolved');
-        return;
-    }
+    if (!link) return;
     const href = link.getAttribute('href');
     const target = href ? document.querySelector(href) : null;
-    console.log('[ArrowUp] href=', href, 'target=', target);
     if (target) smoothScrollTo(target);
 }
 
@@ -152,8 +145,12 @@ function playRandomAnimation() {
 }
 
 function scheduleNextAnimation() {
+    cancelScheduledAnimation();
+    if (isMoving) return;
     const delay = Math.random() * 4000 + 4000;
-    setTimeout(() => {
+    animTimer = setTimeout(() => {
+        animTimer = null;
+        if (isMoving) return;
         playRandomAnimation();
         scheduleNextAnimation();
     }, delay);

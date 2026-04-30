@@ -151,41 +151,40 @@ main {
 
 .nav-character.idle {
     background-image: url('../assets/images/idle-sheet.png');
-    width: clamp(24px, 3vw, 32px);
-    height: clamp(24px, 3vw, 32px);
-    background-size: auto 100%;
-    animation: idleAnim 1s steps(2) infinite;
+    background-size: 200% 100%;
+    animation: idleAnim 1s steps(2, jump-none) infinite;
 }
 
 .nav-character.anim1 {
     background-image: url('../assets/images/anim1-sheet.png');
-    width: clamp(24px, 3vw, 32px);
-    height: clamp(24px, 3vw, 32px);
-    background-size: auto 100%;
-    animation: anim1 5s steps(5) 1 forwards;
+    background-size: 500% 100%;
+    animation: anim1 1.25s steps(5, jump-none) 1 forwards;
 }
 
 .nav-character.anim2 {
     background-image: url('../assets/images/anim2-sheet.png');
-    width: clamp(24px, 3vw, 32px);
-    height: clamp(24px, 3vw, 32px);
-    background-size: auto 100%;
-    animation: anim2 13s steps(13) 1 forwards;
+    background-size: 1300% 100%;
+    animation: anim2 3.25s steps(13, jump-none) 1 forwards;
 }
 
 @keyframes idleAnim {
-    from  {background-position: 0 0;}
-    to { background-position: -200% 0;}
+    from { background-position: 0% 0; }
+    to { background-position: 100% 0; }
 }
 
 @keyframes anim1 {
-    from  {background-position: 0 0;}
-    to { background-position: -500% 0;}
+    from { background-position: 0% 0; }
+    to { background-position: 100% 0; }
 }
 
 @keyframes anim2 {
-    from  {background-position: 0 0;}
-    to { background-position: -1300% 0;}
+    from { background-position: 0% 0; }
+    to { background-position: 100% 0; }
+}
+
+.navbar a.nav-active {
+    color:#ff0066;
+    transform: scale(1.1);
 }
 
 :root {

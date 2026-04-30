@@ -108,6 +108,7 @@ function updateChar() {
 const transitionOverlay = document.querySelector('.transition-overlay');
 const transitionSvg = document.getElementById('transition-svg');
 const SVG_NS = 'http://www.w3.org/2000/svg';
+let transitionPath = null;
 let transitionVivus = null;
 
 // Compute a partial sum of the Riemann zeta function on the critical line:
@@ -168,76 +169,23 @@ function pointsToPathD(points, viewW, viewH, pad) {
     return d;
 }
 
-// Split the zeta trace at the heights of the first nontrivial zeros so each
-// "loop" of the curve becomes its own <path> element. Vivus then animates them
-// in cascade (delayed mode) — first loop draws, second begins before the first
-// is done, and so on, giving a wave-like reveal of the full curve.
-const ZETA_T_MAX = 32;
-const ZETA_ZEROS = [14.134725, 21.022040, 25.010858, 30.424876];
-const ZETA_SPLITS = [0, ...ZETA_ZEROS, ZETA_T_MAX];
-const ZETA_TERMS = 80;
-const ZETA_SAMPLES_PER_UNIT_T = 24;
-
-function computeBoundsFromAllSegments(segments) {
-    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-    for (const seg of segments) {
-        for (const [x, y] of seg) {
-            if (x < minX) minX = x;
-            if (x > maxX) maxX = x;
-            if (y < minY) minY = y;
-            if (y > maxY) maxY = y;
-        }
-    }
-    return { minX, maxX, minY, maxY };
-}
-
-function buildSegmentPath(points, scale, offX, offY) {
-    if (points.length === 0) return '';
-    const mapped = points.map(([x, y]) => [x * scale + offX, y * scale + offY]);
-    if (mapped.length === 1) {
-        return `M ${mapped[0][0].toFixed(2)} ${mapped[0][1].toFixed(2)}`;
-    }
-    let d = `M ${mapped[0][0].toFixed(2)} ${mapped[0][1].toFixed(2)} `;
-    for (let i = 1; i < mapped.length - 1; i++) {
-        const [cx, cy] = mapped[i];
-        const [nx, ny] = mapped[i + 1];
-        const mx = (cx + nx) / 2;
-        const my = (cy + ny) / 2;
-        d += `Q ${cx.toFixed(2)} ${cy.toFixed(2)} ${mx.toFixed(2)} ${my.toFixed(2)} `;
-    }
-    const last = mapped[mapped.length - 1];
-    d += `L ${last[0].toFixed(2)} ${last[1].toFixed(2)}`;
-    return d;
-}
-
 if (transitionSvg && typeof Vivus !== 'undefined') {
-    const segments = [];
-    for (let i = 0; i < ZETA_SPLITS.length - 1; i++) {
-        const tStart = ZETA_SPLITS[i];
-        const tEnd = ZETA_SPLITS[i + 1];
-        const samples = Math.max(40, Math.round((tEnd - tStart) * ZETA_SAMPLES_PER_UNIT_T));
-        segments.push(computeZetaSamples(samples, tStart, tEnd, ZETA_TERMS));
-    }
-    const { minX, maxX, minY, maxY } = computeBoundsFromAllSegments(segments);
-    const viewW = 100, viewH = 60, pad = 3;
-    const w = (maxX - minX) || 1;
-    const h = (maxY - minY) || 1;
-    const scale = Math.min((viewW - 2 * pad) / w, (viewH - 2 * pad) / h);
-    const offX = (viewW - w * scale) / 2 - minX * scale;
-    const offY = (viewH - h * scale) / 2 - minY * scale;
-
-    for (const seg of segments) {
-        const path = document.createElementNS(SVG_NS, 'path');
-        path.setAttribute('class', 'transition-path');
-        path.setAttribute('d', buildSegmentPath(seg, scale, offX, offY));
-        transitionSvg.appendChild(path);
-    }
+    // One continuous trace of zeta(1/2 + i t) for t in [0, 32] — through all the
+    // loops at the first ~5 nontrivial zeros, drawn as a single SVG <path>.
+    // Vivus then handles the dash-based reveal in manual mode, with ease
+    // path-timing for a smoother stroke than raw linear scrubbing.
+    const zetaPoints = computeZetaSamples(700, 0, 32, 80);
+    transitionPath = document.createElementNS(SVG_NS, 'path');
+    transitionPath.setAttribute('class', 'transition-path');
+    transitionPath.setAttribute('d', pointsToPathD(zetaPoints, 100, 60, 3));
+    transitionSvg.appendChild(transitionPath);
 
     transitionVivus = new Vivus('transition-svg', {
         type: 'delayed',
         duration: 200,
         start: 'manual',
-        animTimingFunction: Vivus.EASE_IN_OUT
+        pathTimingFunction: Vivus.EASE,
+        animTimingFunction: Vivus.LINEAR
     });
     transitionVivus.setFrameProgress(0);
 }

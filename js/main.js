@@ -145,14 +145,25 @@ function pointsToPathD(points, viewW, viewH, pad) {
     const scale = Math.min((viewW - 2 * pad) / w, (viewH - 2 * pad) / h);
     const offX = (viewW - w * scale) / 2 - minX * scale;
     const offY = (viewH - h * scale) / 2 - minY * scale;
-    let d = '';
-    for (let i = 0; i < points.length; i++) {
-        const [x, y] = points[i];
-        const sx = (x * scale + offX).toFixed(2);
-        const sy = (y * scale + offY).toFixed(2);
-        d += (i === 0 ? 'M ' : 'L ') + sx + ' ' + sy + ' ';
+    const mapped = points.map(([x, y]) => [x * scale + offX, y * scale + offY]);
+    if (mapped.length === 0) return '';
+    if (mapped.length === 1) {
+        return `M ${mapped[0][0].toFixed(2)} ${mapped[0][1].toFixed(2)}`;
     }
-    return d.trim();
+    // Smooth via quadratic Beziers through segment midpoints: each sample is a
+    // control point, and the curve passes through the midpoint of consecutive
+    // samples — gives C1-continuity so the stroke reads as one flowing curve.
+    let d = `M ${mapped[0][0].toFixed(2)} ${mapped[0][1].toFixed(2)} `;
+    for (let i = 1; i < mapped.length - 1; i++) {
+        const [cx, cy] = mapped[i];
+        const [nx, ny] = mapped[i + 1];
+        const mx = (cx + nx) / 2;
+        const my = (cy + ny) / 2;
+        d += `Q ${cx.toFixed(2)} ${cy.toFixed(2)} ${mx.toFixed(2)} ${my.toFixed(2)} `;
+    }
+    const last = mapped[mapped.length - 1];
+    d += `L ${last[0].toFixed(2)} ${last[1].toFixed(2)}`;
+    return d;
 }
 
 if (transitionPath) {
@@ -170,11 +181,12 @@ function smoothScrollTo(target) {
 
 // Scrubbed line animation driven by scrollTop.
 //
-// Layout: [section][pause][section][pause]... — every snap-point is one viewport tall.
-// As scrollTop animates between adjacent snap points (driven by mandatory snap),
-// `unit = scrollTop / vh` ticks 0 -> 1 -> 2 -> ... and `frac = unit - floor(unit)`
-// is the within-step progress. Even floor(unit) means we're transitioning from a
-// section into a pause (line draws); odd means pause into next section (line fades).
+// Layout: [section][pause][pause][section][pause][pause]... — every snap-point
+// is one viewport tall, with two pauses between sections so the draw spans
+// two wheel-ticks instead of one. Each section transition is a 3-step cycle:
+//   step 0 (section -> pause-a): draw 0% -> 50%
+//   step 1 (pause-a  -> pause-b): draw 50% -> 100% (full graph held at end)
+//   step 2 (pause-b  -> next section): line stays full, opacity fades to 0
 function updateLineFromScroll() {
     if (!transitionPath || !transitionOverlay) return;
     const vh = main.clientHeight;
@@ -183,15 +195,16 @@ function updateLineFromScroll() {
     const unit = scrollTop / vh;
     const step = Math.floor(unit);
     const frac = unit - step;
-    const drawing = (step % 2) === 0;
+    const cycleStep = step % 3;
 
     let progress, opacity;
-    if (drawing) {
-        // section -> pause: line strokes in
-        progress = frac;
+    if (cycleStep === 0) {
+        progress = frac * 0.5;
         opacity = Math.min(frac * 3, 1);
+    } else if (cycleStep === 1) {
+        progress = 0.5 + frac * 0.5;
+        opacity = 1;
     } else {
-        // pause -> next section: line is full, fades out
         progress = 1;
         opacity = Math.max(1 - frac * 1.6, 0);
     }

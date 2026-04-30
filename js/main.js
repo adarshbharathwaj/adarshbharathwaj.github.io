@@ -101,6 +101,7 @@ function updateChar() {
     char.style.transform = `translate3d(${charPos}px, 0, 0)`;
     setMovementState(v !== 0);
     updateActiveLink();
+    if (typeof updateLineFromScroll === 'function') updateLineFromScroll();
     requestAnimationFrame(updateChar);
 }
 
@@ -179,49 +180,40 @@ function smoothScrollTo(target) {
     target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-// Scrubbed line animation driven by scrollTop, with CUMULATIVE progress.
-// The zeta curve is one continuous path that grows across the entire page —
-// each section transition advances it further, never restarts.
+// Scroll-driven line animation, cumulative across the entire page.
 //
-// Layout: [section][pause-a][pause-b][section][pause-a][pause-b]...
-// Each transition is a 3-step cycle: draw, draw, fade. With N transitions
-// (= number of pauses / 2) there are N*2 drawing wheels in total, each
-// advancing the curve by 1/(N*2). Fade phases hold progress fixed and just
-// dim the overlay so the next section reveals cleanly.
-const PAUSES_PER_TRANSITION = 2;
-const numTransitions =
-    document.querySelectorAll('main .transition-pause').length / PAUSES_PER_TRANSITION;
-const numDraws = Math.max(1, numTransitions * PAUSES_PER_TRANSITION);
+// Two simple, fully decoupled mappings:
+//   1. progress = scrollTop / maxScroll  (one continuous global meter,
+//      so the curve never resets — it's the same line picking up where
+//      it left off)
+//   2. opacity  = distance-to-nearest-section, normalized
+//      (line is invisible at section snap points, fully visible at
+//      pause snap points and during smooth-scroll between them)
+//
+// No cycle logic, no per-step snap math. Sampled every animation frame so
+// it's robust to whatever the browser does between snap points.
+const sectionElements = Array.from(document.querySelectorAll('main .snap-section'));
 
 function updateLineFromScroll() {
     if (!transitionPath || !transitionOverlay) return;
     const vh = main.clientHeight;
     if (vh === 0) return;
     const scrollTop = main.scrollTop;
-    const unit = scrollTop / vh;
-    const step = Math.floor(unit);
-    const frac = unit - step;
-    const cycleStep = step % 3;
-    const cycleIdx = Math.floor(step / 3);
-
-    let progress, opacity;
-    if (cycleStep === 0) {
-        // section -> pause-a (drawing, fade IN at saved progress)
-        const drawIndex = cycleIdx * 2;
-        progress = (drawIndex + frac) / numDraws;
-        opacity = Math.min(frac * 3, 1);
-    } else if (cycleStep === 1) {
-        // pause-a -> pause-b (drawing continues, full opacity)
-        const drawIndex = cycleIdx * 2 + 1;
-        progress = (drawIndex + frac) / numDraws;
-        opacity = 1;
-    } else {
-        // pause-b -> next section (progress frozen, fade OUT)
-        progress = ((cycleIdx + 1) * 2) / numDraws;
-        opacity = Math.max(1 - frac * 1.6, 0);
+    const maxScroll = main.scrollHeight - vh;
+    if (maxScroll <= 0) {
+        transitionOverlay.style.opacity = 0;
+        return;
     }
-    progress = Math.max(0, Math.min(1, progress));
-    opacity = Math.max(0, Math.min(1, opacity));
+
+    const progress = Math.max(0, Math.min(1, scrollTop / maxScroll));
+
+    let minDist = Infinity;
+    for (const sec of sectionElements) {
+        const d = Math.abs(scrollTop - sec.offsetTop);
+        if (d < minDist) minDist = d;
+    }
+    const distRatio = minDist / vh;
+    const opacity = Math.max(0, Math.min(1, (distRatio - 0.08) / 0.3));
 
     transitionPath.style.strokeDashoffset = transitionPathLength * (1 - progress);
     transitionOverlay.style.opacity = opacity;

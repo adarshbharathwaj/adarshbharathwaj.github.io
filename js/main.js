@@ -179,14 +179,20 @@ function smoothScrollTo(target) {
     target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-// Scrubbed line animation driven by scrollTop.
+// Scrubbed line animation driven by scrollTop, with CUMULATIVE progress.
+// The zeta curve is one continuous path that grows across the entire page —
+// each section transition advances it further, never restarts.
 //
-// Layout: [section][pause][pause][section][pause][pause]... — every snap-point
-// is one viewport tall, with two pauses between sections so the draw spans
-// two wheel-ticks instead of one. Each section transition is a 3-step cycle:
-//   step 0 (section -> pause-a): draw 0% -> 50%
-//   step 1 (pause-a  -> pause-b): draw 50% -> 100% (full graph held at end)
-//   step 2 (pause-b  -> next section): line stays full, opacity fades to 0
+// Layout: [section][pause-a][pause-b][section][pause-a][pause-b]...
+// Each transition is a 3-step cycle: draw, draw, fade. With N transitions
+// (= number of pauses / 2) there are N*2 drawing wheels in total, each
+// advancing the curve by 1/(N*2). Fade phases hold progress fixed and just
+// dim the overlay so the next section reveals cleanly.
+const PAUSES_PER_TRANSITION = 2;
+const numTransitions =
+    document.querySelectorAll('main .transition-pause').length / PAUSES_PER_TRANSITION;
+const numDraws = Math.max(1, numTransitions * PAUSES_PER_TRANSITION);
+
 function updateLineFromScroll() {
     if (!transitionPath || !transitionOverlay) return;
     const vh = main.clientHeight;
@@ -196,18 +202,26 @@ function updateLineFromScroll() {
     const step = Math.floor(unit);
     const frac = unit - step;
     const cycleStep = step % 3;
+    const cycleIdx = Math.floor(step / 3);
 
     let progress, opacity;
     if (cycleStep === 0) {
-        progress = frac * 0.5;
+        // section -> pause-a (drawing, fade IN at saved progress)
+        const drawIndex = cycleIdx * 2;
+        progress = (drawIndex + frac) / numDraws;
         opacity = Math.min(frac * 3, 1);
     } else if (cycleStep === 1) {
-        progress = 0.5 + frac * 0.5;
+        // pause-a -> pause-b (drawing continues, full opacity)
+        const drawIndex = cycleIdx * 2 + 1;
+        progress = (drawIndex + frac) / numDraws;
         opacity = 1;
     } else {
-        progress = 1;
+        // pause-b -> next section (progress frozen, fade OUT)
+        progress = ((cycleIdx + 1) * 2) / numDraws;
         opacity = Math.max(1 - frac * 1.6, 0);
     }
+    progress = Math.max(0, Math.min(1, progress));
+    opacity = Math.max(0, Math.min(1, opacity));
 
     transitionPath.style.strokeDashoffset = transitionPathLength * (1 - progress);
     transitionOverlay.style.opacity = opacity;

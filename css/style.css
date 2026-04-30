@@ -136,7 +136,6 @@ main {
     background-repeat: no-repeat;
     background-position: 0 0;
     background-image: url('../assets/images/idle-sheet.png');
-    transition: transform 0.2s cubic-bezier(0.25, 1.25, 0.5, 1);
     z-index: 1001;
     flex-shrink: 0;
     position: relative;
@@ -169,21 +168,21 @@ main {
 
 @keyframes idleAnim {
     from { background-position: 0% 0; }
-    to { background-position: 100% 0; }
+    to   { background-position: 100% 0; }
 }
 
 @keyframes anim1 {
     from { background-position: 0% 0; }
-    to { background-position: 100% 0; }
+    to   { background-position: 100% 0; }
 }
 
 @keyframes anim2 {
     from { background-position: 0% 0; }
-    to { background-position: 100% 0; }
+    to   { background-position: 100% 0; }
 }
 
 .navbar a.nav-active {
-    color:#ff0066;
+    color: #ff0066;
     transform: scale(1.1);
 }
 

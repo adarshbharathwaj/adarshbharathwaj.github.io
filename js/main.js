@@ -3,14 +3,35 @@ console.log("Website loaded successfully!");
 const main = document.querySelector('main');
 const char = document.querySelector('.nav-character');
 const navbar = document.querySelector('.navbar');
-const navLinks = Array.from(document.querySelector('.navbar nav a'));
+const navLinks = Array.from(document.querySelectorAll('.navbar nav a'));
 
 char.classList.add('idle');
 
 let charPos = 0;
 const speed = 3;
-const keys = { left : false, right : false };
+const keys = { left: false, right: false };
 let activeLink = null;
+let isMoving = false;
+let currentAnimHandler = null;
+
+function clearAnimHandler() {
+    if (currentAnimHandler) {
+        char.removeEventListener('animationend', currentAnimHandler);
+        currentAnimHandler = null;
+    }
+}
+
+function setMovementState(moving) {
+    if (moving === isMoving) return;
+    isMoving = moving;
+    if (moving) {
+        clearAnimHandler();
+        char.classList.remove('idle', 'anim1', 'anim2');
+    } else {
+        char.classList.remove('anim1', 'anim2');
+        char.classList.add('idle');
+    }
+}
 
 function getBounds() {
     const navRect = navbar.getBoundingClientRect();
@@ -31,17 +52,14 @@ function getCurrentLink() {
         const r = link.getBoundingClientRect();
         const center = r.left + r.width / 2;
         const dist = Math.abs(charCenter - center);
-        if (dist < bestDist) {
-            bestDist = dist;
-            best = link;
-        }
-        return best;
+        if (dist < bestDist) { bestDist = dist; best = link; }
     }
+    return best;
 }
 
 function updateActiveLink() {
     const link = getCurrentLink();
-    if (link === activeLink)  return;
+    if (link === activeLink) return;
     if (activeLink) activeLink.classList.remove('nav-active');
     if (link) link.classList.add('nav-active');
     activeLink = link;
@@ -58,6 +76,7 @@ function updateChar() {
     if (charPos > maxPos) charPos = maxPos;
 
     char.style.transform = `translate3d(${charPos}px, 0, 0)`;
+    setMovementState(v !== 0);
     updateActiveLink();
     requestAnimationFrame(updateChar);
 }
@@ -80,19 +99,25 @@ function smoothScrollTo(target) {
 }
 
 function activateCurrentLink() {
-    const link = activeLink || getCurrentLink();
-    if (!link) return;
-    const target = document.querySelector(link.getAttribute('href'));
+    const link = getCurrentLink();
+    if (!link) {
+        console.log('[ArrowUp] no link resolved');
+        return;
+    }
+    const href = link.getAttribute('href');
+    const target = href ? document.querySelector(href) : null;
+    console.log('[ArrowUp] href=', href, 'target=', target);
     if (target) smoothScrollTo(target);
 }
-
 
 document.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowRight') { keys.right = true; e.preventDefault(); }
     else if (e.key === 'ArrowLeft') { keys.left = true; e.preventDefault(); }
-    else if (e.key === 'ArrowUp') { activateCurrentLink(); e.preventDefault(); }
+    else if (e.key === 'ArrowUp' || e.key === 'Up') {
+        e.preventDefault();
+        if (!e.repeat) activateCurrentLink();
+    }
 });
-
 document.addEventListener('keyup', (e) => {
     if (e.key === 'ArrowRight') keys.right = false;
     if (e.key === 'ArrowLeft') keys.left = false;
@@ -107,21 +132,22 @@ navLinks.forEach(anchor => {
 });
 
 function playRandomAnimation() {
+    if (isMoving) return;
+    clearAnimHandler();
+
     const anims = ['anim1', 'anim2'];
     const chosenAnim = anims[Math.floor(Math.random() * anims.length)];
+
     char.classList.remove('idle', 'anim1', 'anim2');
-
     void char.offsetWidth;
-
     char.classList.add(chosenAnim);
 
     const handler = () => {
         char.classList.remove(chosenAnim);
-        char.classList.add('idle');
-        char.removeEventListener('animationend', handler);
+        if (!isMoving) char.classList.add('idle');
+        clearAnimHandler();
     };
-
-
+    currentAnimHandler = handler;
     char.addEventListener('animationend', handler);
 }
 
@@ -139,7 +165,6 @@ function preloadImages() {
         'assets/images/anim1-sheet.png',
         'assets/images/anim2-sheet.png'
     ];
-
     images.forEach(src => {
         const img = new Image();
         img.src = src;

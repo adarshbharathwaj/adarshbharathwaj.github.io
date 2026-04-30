@@ -186,6 +186,37 @@ main {
     transform: scale(1.1);
 }
 
+.arrow-down {
+    width: clamp(28px, 4vw, 44px);
+    height: clamp(28px, 4vw, 44px);
+    border-right: 4px solid #00ffc8;
+    border-bottom: 4px solid #00ffc8;
+    margin: 1.5rem auto 0;
+    animation: arrowBounce 1.2s ease-in-out infinite;
+}
+
+@keyframes arrowBounce {
+    0%, 100% { transform: rotate(45deg) translate(0, 0); }
+    50%      { transform: rotate(45deg) translate(6px, 6px); }
+}
+
+.surprise-image-stub {
+    width: clamp(200px, 50vw, 480px);
+    height: clamp(200px, 50vw, 480px);
+    border: 2px dashed #00ffc8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #00ffc8;
+    font-family: 'Cyber', sans-serif;
+    image-rendering: pixelated;
+    margin: 0 auto;
+}
+
+body.no-navbar main {
+    height: var(--vh);
+}
+
 :root {
     --vh: 100%;
 }

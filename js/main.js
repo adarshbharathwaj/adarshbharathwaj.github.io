@@ -100,7 +100,89 @@ function updateChar() {
     requestAnimationFrame(updateChar);
 }
 
+const transitionOverlay = document.querySelector('.transition-overlay');
+const transitionPath = document.querySelector('.transition-path');
+const TRANSITION_DRAW_MS = 700;
+const TRANSITION_HOLD_MS = 200;
+let transitionPathLength = 0;
+let transitionTimeout = null;
+
+// Compute a partial sum of the Riemann zeta function on the critical line:
+//   zeta(1/2 + i t) ≈ sum_{n=1..N} 1/n^(1/2 + i t)
+// Trace the curve in the complex plane (Re on x, Im on y) as t sweeps a range,
+// producing the loopy spirograph that passes near the origin at each nontrivial zero.
+function computeZetaSamples(samples, tMin, tMax, terms) {
+    const points = new Array(samples + 1);
+    const lnTable = new Array(terms + 1);
+    const invSqrt = new Array(terms + 1);
+    for (let n = 1; n <= terms; n++) {
+        lnTable[n] = Math.log(n);
+        invSqrt[n] = 1 / Math.sqrt(n);
+    }
+    for (let i = 0; i <= samples; i++) {
+        const t = tMin + (tMax - tMin) * (i / samples);
+        let re = 0, im = 0;
+        for (let n = 1; n <= terms; n++) {
+            re += invSqrt[n] * Math.cos(t * lnTable[n]);
+            im -= invSqrt[n] * Math.sin(t * lnTable[n]);
+        }
+        points[i] = [re, im];
+    }
+    return points;
+}
+
+function pointsToPathD(points, viewW, viewH, pad) {
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    for (const [x, y] of points) {
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+    }
+    const w = maxX - minX || 1;
+    const h = maxY - minY || 1;
+    const scale = Math.min((viewW - 2 * pad) / w, (viewH - 2 * pad) / h);
+    const offX = (viewW - w * scale) / 2 - minX * scale;
+    const offY = (viewH - h * scale) / 2 - minY * scale;
+    let d = '';
+    for (let i = 0; i < points.length; i++) {
+        const [x, y] = points[i];
+        const sx = (x * scale + offX).toFixed(2);
+        const sy = (y * scale + offY).toFixed(2);
+        d += (i === 0 ? 'M ' : 'L ') + sx + ' ' + sy + ' ';
+    }
+    return d.trim();
+}
+
+if (transitionPath) {
+    // t up to ~32 traces past the first 5 nontrivial zeros: 14.13, 21.02, 25.01, 30.42
+    const zetaPoints = computeZetaSamples(700, 0, 32, 80);
+    transitionPath.setAttribute('d', pointsToPathD(zetaPoints, 100, 60, 3));
+    transitionPathLength = transitionPath.getTotalLength();
+    transitionPath.style.strokeDasharray = transitionPathLength;
+    transitionPath.style.strokeDashoffset = transitionPathLength;
+}
+
+function playTransition() {
+    if (!transitionPath || !transitionOverlay) return;
+    if (transitionTimeout !== null) {
+        clearTimeout(transitionTimeout);
+        transitionTimeout = null;
+    }
+    transitionPath.style.transition = 'none';
+    transitionPath.style.strokeDashoffset = transitionPathLength;
+    void transitionPath.getBoundingClientRect();
+    transitionOverlay.classList.add('active');
+    transitionPath.style.transition = `stroke-dashoffset ${TRANSITION_DRAW_MS}ms ease-in-out`;
+    transitionPath.style.strokeDashoffset = '0';
+    transitionTimeout = setTimeout(() => {
+        transitionOverlay.classList.remove('active');
+        transitionTimeout = null;
+    }, TRANSITION_DRAW_MS + TRANSITION_HOLD_MS);
+}
+
 function smoothScrollTo(target) {
+    playTransition();
     target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 

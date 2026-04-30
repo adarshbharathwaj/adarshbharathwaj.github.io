@@ -214,6 +214,35 @@ body.no-navbar main {
     height: var(--vh);
 }
 
+.transition-overlay {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1500;
+    opacity: 0;
+    transition: opacity 180ms ease-out;
+}
+
+.transition-overlay.active {
+    opacity: 1;
+}
+
+.transition-overlay svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.transition-path {
+    fill: none;
+    stroke: #00ffc8;
+    stroke-width: 0.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    filter: drop-shadow(0 0 4px rgba(0, 255, 200, 0.8));
+    vector-effect: non-scaling-stroke;
+}
+
 :root {
     --vh: 100%;
 }

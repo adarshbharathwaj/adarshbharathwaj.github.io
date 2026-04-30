@@ -106,8 +106,9 @@ function updateChar() {
 }
 
 const transitionOverlay = document.querySelector('.transition-overlay');
-const transitionPath = document.querySelector('.transition-path');
-let transitionPathLength = 0;
+const transitionSvg = document.getElementById('transition-svg');
+const SVG_NS = 'http://www.w3.org/2000/svg';
+let transitionVivus = null;
 
 // Compute a partial sum of the Riemann zeta function on the critical line:
 //   zeta(1/2 + i t) ≈ sum_{n=1..N} 1/n^(1/2 + i t)
@@ -167,13 +168,78 @@ function pointsToPathD(points, viewW, viewH, pad) {
     return d;
 }
 
-if (transitionPath) {
-    // t up to ~32 traces past the first 5 nontrivial zeros: 14.13, 21.02, 25.01, 30.42
-    const zetaPoints = computeZetaSamples(700, 0, 32, 80);
-    transitionPath.setAttribute('d', pointsToPathD(zetaPoints, 100, 60, 3));
-    transitionPathLength = transitionPath.getTotalLength();
-    transitionPath.style.strokeDasharray = transitionPathLength;
-    transitionPath.style.strokeDashoffset = transitionPathLength;
+// Split the zeta trace at the heights of the first nontrivial zeros so each
+// "loop" of the curve becomes its own <path> element. Vivus then animates them
+// in cascade (delayed mode) — first loop draws, second begins before the first
+// is done, and so on, giving a wave-like reveal of the full curve.
+const ZETA_T_MAX = 32;
+const ZETA_ZEROS = [14.134725, 21.022040, 25.010858, 30.424876];
+const ZETA_SPLITS = [0, ...ZETA_ZEROS, ZETA_T_MAX];
+const ZETA_TERMS = 80;
+const ZETA_SAMPLES_PER_UNIT_T = 24;
+
+function computeBoundsFromAllSegments(segments) {
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    for (const seg of segments) {
+        for (const [x, y] of seg) {
+            if (x < minX) minX = x;
+            if (x > maxX) maxX = x;
+            if (y < minY) minY = y;
+            if (y > maxY) maxY = y;
+        }
+    }
+    return { minX, maxX, minY, maxY };
+}
+
+function buildSegmentPath(points, scale, offX, offY) {
+    if (points.length === 0) return '';
+    const mapped = points.map(([x, y]) => [x * scale + offX, y * scale + offY]);
+    if (mapped.length === 1) {
+        return `M ${mapped[0][0].toFixed(2)} ${mapped[0][1].toFixed(2)}`;
+    }
+    let d = `M ${mapped[0][0].toFixed(2)} ${mapped[0][1].toFixed(2)} `;
+    for (let i = 1; i < mapped.length - 1; i++) {
+        const [cx, cy] = mapped[i];
+        const [nx, ny] = mapped[i + 1];
+        const mx = (cx + nx) / 2;
+        const my = (cy + ny) / 2;
+        d += `Q ${cx.toFixed(2)} ${cy.toFixed(2)} ${mx.toFixed(2)} ${my.toFixed(2)} `;
+    }
+    const last = mapped[mapped.length - 1];
+    d += `L ${last[0].toFixed(2)} ${last[1].toFixed(2)}`;
+    return d;
+}
+
+if (transitionSvg && typeof Vivus !== 'undefined') {
+    const segments = [];
+    for (let i = 0; i < ZETA_SPLITS.length - 1; i++) {
+        const tStart = ZETA_SPLITS[i];
+        const tEnd = ZETA_SPLITS[i + 1];
+        const samples = Math.max(40, Math.round((tEnd - tStart) * ZETA_SAMPLES_PER_UNIT_T));
+        segments.push(computeZetaSamples(samples, tStart, tEnd, ZETA_TERMS));
+    }
+    const { minX, maxX, minY, maxY } = computeBoundsFromAllSegments(segments);
+    const viewW = 100, viewH = 60, pad = 3;
+    const w = (maxX - minX) || 1;
+    const h = (maxY - minY) || 1;
+    const scale = Math.min((viewW - 2 * pad) / w, (viewH - 2 * pad) / h);
+    const offX = (viewW - w * scale) / 2 - minX * scale;
+    const offY = (viewH - h * scale) / 2 - minY * scale;
+
+    for (const seg of segments) {
+        const path = document.createElementNS(SVG_NS, 'path');
+        path.setAttribute('class', 'transition-path');
+        path.setAttribute('d', buildSegmentPath(seg, scale, offX, offY));
+        transitionSvg.appendChild(path);
+    }
+
+    transitionVivus = new Vivus('transition-svg', {
+        type: 'delayed',
+        duration: 200,
+        start: 'manual',
+        animTimingFunction: Vivus.EASE_IN_OUT
+    });
+    transitionVivus.setFrameProgress(0);
 }
 
 function smoothScrollTo(target) {
@@ -195,7 +261,7 @@ function smoothScrollTo(target) {
 const sectionElements = Array.from(document.querySelectorAll('main .snap-section'));
 
 function updateLineFromScroll() {
-    if (!transitionPath || !transitionOverlay) return;
+    if (!transitionVivus || !transitionOverlay) return;
     const vh = main.clientHeight;
     if (vh === 0) return;
     const scrollTop = main.scrollTop;
@@ -215,7 +281,7 @@ function updateLineFromScroll() {
     const distRatio = minDist / vh;
     const opacity = Math.max(0, Math.min(1, (distRatio - 0.08) / 0.3));
 
-    transitionPath.style.strokeDashoffset = transitionPathLength * (1 - progress);
+    transitionVivus.setFrameProgress(progress);
     transitionOverlay.style.opacity = opacity;
 }
 

@@ -202,12 +202,12 @@ main {
 
 .surprise-image {
     display: block;
-    max-width: 500vw;
-    max-height: 500vh;
     width: auto;
-    height: auto;
+    height: 85vh;
+    max-width: 95vw;
     margin: 0 auto;
     image-rendering: auto;
+    object-fit: contain;
 }
 
 body.no-navbar main {

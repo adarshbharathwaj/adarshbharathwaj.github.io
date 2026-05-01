@@ -9,6 +9,15 @@
 
 <body>
   <canvas id="bg-canvas" aria-hidden="true"></canvas>
+
+  <svg class="glass-defs" aria-hidden="true">
+    <defs>
+      <filter id="glass-distortion" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.009 0.013" numOctaves="2" seed="11" stitchTiles="stitch" />
+        <feDisplacementMap in="SourceGraphic" scale="38" />
+      </filter>
+    </defs>
+  </svg>
   <header class="navbar">
     <div class = "nav-character"></div>
     <nav>
@@ -28,6 +37,7 @@
         <p class="section-text cyber-text"> Hello, my name is Adarsh Bharathwaj!</p>
       </div>
     </section>
+    <div class="transition-spacer" aria-hidden="true"></div>
     <section id="about" class="snap-section">
       <div class="section-content">
         <h1 class="section-title pixel-text">About Me</h1>
@@ -39,12 +49,14 @@
         </p>
       </div>
     </section>
+    <div class="transition-spacer" aria-hidden="true"></div>
     <section id="projects" class="snap-section">
       <div class="section-content">
         <h1 class="section-title pixel-text">Projects</h1>
         <p class="section-text cyber-text"> Will add soon!</p>
       </div>
     </section>
+    <div class="transition-spacer" aria-hidden="true"></div>
     <section id="thanks" class="snap-section">
       <div class="section-content">
         <h1 class="section-title pixel-text"> Thanks!</h1>

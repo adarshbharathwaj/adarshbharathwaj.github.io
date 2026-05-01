@@ -130,15 +130,22 @@ if (canvas) {
     if (window.gsap && window.ScrollTrigger && main) {
         gsap.registerPlugin(ScrollTrigger);
 
-        // Total scroll = 4 sections × vh − vh = 3·vh. Three transitions, each
-        // ~1/3 of the timeline, broken into dive (5%) + follow (22%) + pull (6%).
+        // Layout: 4 sections + 3 non-snapping spacers = 7·vh content. Each
+        // section transition spans 2·vh of scroll (section + spacer), giving
+        // smooth-scroll plenty of time. ScrollTrigger maps the timeline (3
+        // transitions × 1.0 = 3.0) across whatever maxScroll currently is.
+        //
+        // Phase split per transition (sums to 1.0):
+        //   dive    0.18  — sine.inOut, ease into close-up
+        //   follow  0.64  — sine.inOut, glide along the curve
+        //   pull    0.18  — sine.inOut, ease back out to next section
         const tl = gsap.timeline({
             scrollTrigger: {
                 scroller: main,
                 trigger: main,
                 start: 'top top',
                 end: () => `+=${main.scrollHeight - main.clientHeight}`,
-                scrub: 0.5
+                scrub: 1.0
             }
         });
 
@@ -148,22 +155,22 @@ if (canvas) {
                 orbitAngle: diveAngle,
                 orbitHeight: 0,
                 followStrength: 1,
-                duration: 0.06,
-                ease: 'power2.in'
+                duration: 0.18,
+                ease: 'sine.inOut'
             });
             tl.to(cam, {
                 orbitAngle: followAngle,
                 orbitHeight: 4,
-                duration: 0.22,
-                ease: 'none'
+                duration: 0.64,
+                ease: 'sine.inOut'
             });
             tl.to(cam, {
                 orbitRadius: SECTION_RADIUS,
                 orbitAngle: settleAngle,
                 orbitHeight: settleHeight,
                 followStrength: 0,
-                duration: 0.05,
-                ease: 'power2.out'
+                duration: 0.18,
+                ease: 'sine.inOut'
             });
         }
 

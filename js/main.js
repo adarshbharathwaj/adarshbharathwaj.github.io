@@ -183,7 +183,10 @@ function pointsToPathD(points, viewW, viewH, pad) {
     return d.trim();
 }
 
-if (transitionSvg && typeof Vivus !== 'undefined') {
+// Set to true to re-enable the zeta-curve transition overlay. Left in place so
+// the implementation can be revived without re-writing it.
+const ENABLE_ZETA_TRANSITION = false;
+if (ENABLE_ZETA_TRANSITION && transitionSvg && typeof Vivus !== 'undefined') {
     // One continuous trace of zeta(1/2 + i t) for t in [0, 32] — through all the
     // loops at the first ~5 nontrivial zeros, drawn as a single SVG <path>.
     // Vivus then handles the dash-based reveal in manual mode, with ease

@@ -1,14 +1,14 @@
 import * as THREE from './three.module.min.js';
 
-// Lorenz strange attractor — slow-orbiting camera background scene.
+// Lorenz strange attractor — slow-orbiting camera background scene with
+// scroll-driven camera panning via GSAP ScrollTrigger.
 //
 // Numerical integration of the Lorenz system (sigma=10, rho=28, beta=8/3)
 // produces the classic butterfly. We carry a circular trail of N recent
 // integration steps in a Float32Array; each frame, copyWithin shifts the
 // buffer left by one point, the latest integration result is written at the
 // head, and a static color gradient gives the trail its "bright head, faded
-// tail" look. AdditiveBlending + thin lines is enough to read as a glowing
-// curve on a dark background without needing any post-processing.
+// tail" look.
 
 const canvas = document.getElementById('bg-canvas');
 if (canvas) {
@@ -55,8 +55,7 @@ if (canvas) {
     const colors    = new Float32Array(N * 3);
 
     // Map Lorenz axes -> Three.js axes so the attractor's natural vertical
-    // (Lorenz Z, ~0..50) becomes Three.js Y (up). Centered around origin by
-    // subtracting 25 from Z.
+    // (Lorenz Z, ~0..50) becomes Three.js Y (up). Centered around origin.
     function writeHead(idx) {
         positions[idx * 3]     = state[0];
         positions[idx * 3 + 1] = state[2] - 25;
@@ -68,25 +67,30 @@ if (canvas) {
         writeHead(i);
     }
 
-    // Static color gradient: index 0 (oldest) faintest, index N-1 (newest) full
-    // cyan #00ffc8 = (0, 1.0, 0.78). As the buffer shifts each frame, points
-    // age toward index 0, so a point's brightness naturally fades over time.
+    // Static color gradient toward gold #e6c821 = (0.902, 0.784, 0.129).
+    // Higher exponent (2.4) produces a sharper falloff so most of the trail
+    // is dim and only the leading head reads bright — visually thinner.
+    const GOLD_R = 0.902;
+    const GOLD_G = 0.784;
+    const GOLD_B = 0.129;
     for (let i = 0; i < N; i++) {
         const t = i / (N - 1);
-        const intensity = Math.pow(t, 1.6);
-        colors[i * 3]     = 0;
-        colors[i * 3 + 1] = intensity * 1.0;
-        colors[i * 3 + 2] = intensity * 0.78;
+        const intensity = Math.pow(t, 2.4);
+        colors[i * 3]     = intensity * GOLD_R;
+        colors[i * 3 + 1] = intensity * GOLD_G;
+        colors[i * 3 + 2] = intensity * GOLD_B;
     }
 
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     geometry.setAttribute('color',    new THREE.BufferAttribute(colors, 3));
 
+    // Lower opacity reduces the additive bloom so the line reads thinner
+    // overall (WebGL ignores stroke-width on Line, so opacity is the lever).
     const material = new THREE.LineBasicMaterial({
         vertexColors: true,
         transparent: true,
-        opacity: 0.85,
+        opacity: 0.55,
         blending: THREE.AdditiveBlending,
         depthWrite: false
     });
@@ -94,12 +98,34 @@ if (canvas) {
     const line = new THREE.Line(geometry, material);
     scene.add(line);
 
-    // Slow orbital camera: ~100 sec per revolution at 60 fps, slight elevation
-    // for a 3/4 view of the butterfly.
+    // Camera state: scroll progress 0..1 drives a helical orbit (~1.5 turns
+    // around the attractor while rising) plus a slow constant drift so the
+    // scene never feels frozen when the user is stationary.
     const ORBIT_RADIUS = 70;
-    const ORBIT_HEIGHT = 10;
-    const ORBIT_SPEED  = 0.001;
-    let orbitAngle = 0;
+    const SCROLL_TURNS = 1.5;
+    const HEIGHT_START = -10;
+    const HEIGHT_END   = 35;
+    const DRIFT_SPEED  = 0.0004; // rad/frame
+
+    const cameraScroll = { progress: 0 };
+    let driftAngle = 0;
+
+    // GSAP ScrollTrigger: tie cameraScroll.progress to scroll position of
+    // <main> (our scroll container, not window). Scrub: 0.6 adds a tiny
+    // rubber-band lag so the camera glides instead of locking 1:1 to scroll.
+    const main = document.querySelector('main');
+    if (window.gsap && window.ScrollTrigger && main) {
+        gsap.registerPlugin(ScrollTrigger);
+        gsap.timeline({
+            scrollTrigger: {
+                scroller: main,
+                trigger: main,
+                start: 'top top',
+                end: () => `+=${main.scrollHeight - main.clientHeight}`,
+                scrub: 0.6
+            }
+        }).to(cameraScroll, { progress: 1, duration: 1, ease: 'none' });
+    }
 
     function tick() {
         for (let s = 0; s < STEPS_PER_FRAME; s++) {
@@ -109,11 +135,13 @@ if (canvas) {
         }
         geometry.attributes.position.needsUpdate = true;
 
-        orbitAngle += ORBIT_SPEED;
+        driftAngle += DRIFT_SPEED;
+        const angle = cameraScroll.progress * Math.PI * 2 * SCROLL_TURNS + driftAngle;
+        const height = HEIGHT_START + cameraScroll.progress * (HEIGHT_END - HEIGHT_START);
         camera.position.set(
-            Math.cos(orbitAngle) * ORBIT_RADIUS,
-            ORBIT_HEIGHT,
-            Math.sin(orbitAngle) * ORBIT_RADIUS
+            Math.cos(angle) * ORBIT_RADIUS,
+            height,
+            Math.sin(angle) * ORBIT_RADIUS
         );
         camera.lookAt(0, 0, 0);
 

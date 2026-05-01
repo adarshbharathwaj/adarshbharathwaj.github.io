@@ -321,6 +321,13 @@ body.locked .password-gate {
     --vh: 100%;
 }
 
+.section-content {
+    background: rgba(10, 10, 10, 0.55);
+    backdrop-filter: blur(6px);
+    padding: clamp(20px, 4vw, 40px);
+    border-radius: 8px;
+}
+
 @supports (--webkit-touch-callout: none) {
     :root {
         --vh: 100svh;

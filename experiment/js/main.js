@@ -269,22 +269,12 @@ function activateCurrentLink() {
     if (target) smoothScrollTo(target);
 }
 
-const SURPRISE_WORD = 'surprise';
-let typedBuffer = '';
-
 document.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowRight') { keys.right = true; e.preventDefault(); }
     else if (e.key === 'ArrowLeft') { keys.left = true; e.preventDefault(); }
     else if (e.key === 'ArrowUp' || e.key === 'Up') {
         e.preventDefault();
         if (!e.repeat) activateCurrentLink();
-    }
-    else if (/^[a-zA-Z]$/.test(e.key)) {
-        typedBuffer = (typedBuffer + e.key.toLowerCase()).slice(-SURPRISE_WORD.length);
-        if (typedBuffer === SURPRISE_WORD) {
-            typedBuffer = '';
-            window.location.href = 'surprise/';
-        }
     }
 });
 document.addEventListener('keyup', (e) => {

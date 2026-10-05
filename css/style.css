@@ -1,404 +1,104 @@
-@font-face {
-    font-family: 'Cyber';
-    src: url('../assets/fonts/LowresPixel-Regular.otf') format('opentype');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'Pixel';
-    src: url('../assets/fonts/yoster.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-
-.cyber-text {
-    font-family: 'Cyber', sans-serif;
-    line-height: 1.2;
-    -webkit-font-smoothing: none;
-    image-rendering: pixelated;
-}
-
-.pixel-text {
-    font-family: 'Pixel', sans-serif;
-    line-height: 1.1;
-    -webkit-font-smoothing: none;
-    image-rendering: pixelated;
-}
-
-h1 {
-    font-size: clamp(1.8rem, 2vw + 1rem, 3rem);
-    margin: 0.5em 0;
-}
-
-body {
-    font-size: clamp(0.9rem, 2vw + 0.5rem, 1.2rem);
-}
-
-html, body {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    scroll-behavior: smooth;
-    font-family: 'Cyber', sans-serif;
-    color: #00ffc8;
-}
-
-html {
-    background-color: #0a0a0a;
-}
-
-body {
-    overflow: hidden;
-    background-color: transparent;
-}
-
-#bg-canvas {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -1;
-    pointer-events: none;
-}
-
-main::-webkit-scrollbar {
-    display: none;
-}
-
-main {
-    height: var(--vh);
-    overflow-y: auto;
-    scroll-snap-type: y mandatory;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-}
-
-.snap-section {
-    scroll-snap-align: start;
-    height: var(--vh);
-    display: flex;
-    flex-direction: column;;
-    align-items: center;
-    justify-content: center;
-    padding-top: 0 clamp(20px, 4vw, 60px);
-    text-align: center;
-}
-
-.transition-pause {
-    scroll-snap-align: start;
-    height: var(--vh);
-}
-
-/* Non-snapping scroll spacer between sections — adds extra scroll distance
-   so scroll-snap's smooth-scroll covers more pixels (and thus takes longer)
-   between section snap points, giving the camera animation room to ease. */
-.transition-spacer {
-    height: var(--vh);
-    pointer-events: none;
-}
-
-/* Hidden container for SVG filter defs (referenced by url(#glass-distortion)
-   in backdrop-filter on .section-content). */
-.glass-defs {
-    position: absolute;
-    width: 0;
-    height: 0;
-    overflow: hidden;
-    pointer-events: none;
-}
-
-.section-title {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
-    color:#00ffc8;
-}
-
-.section-text {
-    max-width: 800px;
-    font-size: 1.2rem;
-    line-height: 1.6;
-    color: #b5fff1;
-}
-
-.navbar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: clamp(60px, 8vh, 80px);
-    background: rgba(10, 10, 10, 0.9);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: clamp(15px, 2vw, 25px);
-    z-index: 1000;
-    box-shadow: 0 2px 10px rgba(0, 255, 200, 0.2);
-    backdrop-filter: blur(6px);
-    padding: 0 clamp(20px, 4vw, 50px);
-}
-
-.navbar ul {
-    list-style: none;
-    display: flex;
-    gap: clamp(20px, 3vw, 35px);
-    margin: 0;
-    padding: 0;
-}
-
-.navbar a {
-    color: #00ffc8;
-    text-decoration: none;
-    font-size: clamp(0.9rem, 1.5vw, 1.2rem);
-    transition: color 0.2s, transform 0.2s;
-}
-
-.navbar a:hover {
-    color: #ff0066;
-    transform: scale(1.1);
-}
-
-.navbar .nav-character {
-    margin-right: clamp(15px, 2vw, 25px);
-}
-
-.nav-character {
-    width: clamp(24px, 3vw, 32px);
-    height: clamp(24px, 3vw, 32px);
-    image-rendering: pixelated;
-    background-repeat: no-repeat;
-    background-position: 0 0;
-    background-image: url('../assets/images/idle-sheet.png');
-    z-index: 1001;
-    flex-shrink: 0;
-    position: relative;
-    overflow: hidden;
-    will-change: background-position;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
-    animation-fill-mode: forwards;
-}
-
-.nav-character.idle {
-    background-image: url('../assets/images/idle-sheet.png');
-    background-size: 200% 100%;
-    animation: idleAnim 1s steps(2, jump-none) infinite;
-}
-
-.nav-character.anim1 {
-    background-image: url('../assets/images/anim1-sheet.png');
-    background-size: 500% 100%;
-    animation: anim1 1.25s steps(5, jump-none) 1 forwards;
-}
-
-.nav-character.anim2 {
-    background-image: url('../assets/images/anim2-sheet.png');
-    background-size: 1300% 100%;
-    animation: anim2 3.25s steps(13, jump-none) 1 forwards;
-}
-
-@keyframes idleAnim {
-    from { background-position: 0% 0; }
-    to   { background-position: 100% 0; }
-}
-
-@keyframes anim1 {
-    from { background-position: 0% 0; }
-    to   { background-position: 100% 0; }
-}
-
-@keyframes anim2 {
-    from { background-position: 0% 0; }
-    to   { background-position: 100% 0; }
-}
-
-.navbar a.nav-active {
-    color: #ff0066;
-    transform: scale(1.1);
-}
-
-.arrow-down {
-    width: clamp(28px, 4vw, 44px);
-    height: clamp(28px, 4vw, 44px);
-    border-right: 4px solid #00ffc8;
-    border-bottom: 4px solid #00ffc8;
-    margin: 1.5rem auto 0;
-    animation: arrowBounce 1.2s ease-in-out infinite;
-}
-
-@keyframes arrowBounce {
-    0%, 100% { transform: rotate(45deg) translate(0, 0); }
-    50%      { transform: rotate(45deg) translate(6px, 6px); }
-}
-
-.surprise-image {
-    display: block;
-    width: auto;
-    height: 85vh;
-    max-width: 95vw;
-    margin: 0 auto;
-    image-rendering: auto;
-    object-fit: contain;
-}
-
-body.no-navbar main {
-    height: var(--vh);
-}
-
-body.locked main {
-    filter: blur(18px);
-    pointer-events: none;
-    user-select: none;
-}
-
-.password-gate {
-    position: fixed;
-    inset: 0;
-    z-index: 2500;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    background: rgba(10, 10, 10, 0.55);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    padding: 1rem;
-}
-
-body.locked .password-gate {
-    display: flex;
-}
-
-.password-gate-card {
-    background: #0a0a0a;
-    border: 2px solid #00ffc8;
-    box-shadow: 0 0 24px rgba(0, 255, 200, 0.45);
-    padding: clamp(20px, 4vw, 40px);
-    text-align: center;
-    max-width: 90vw;
-}
-
-.password-gate-card .section-title {
-    margin-bottom: 0.5rem;
-}
-
-.password-gate-card input {
-    background: #0a0a0a;
-    border: 1px solid #00ffc8;
-    color: #00ffc8;
-    font-family: 'Cyber', sans-serif;
-    font-size: clamp(1rem, 2vw + 0.4rem, 1.4rem);
-    padding: 0.5em 1em;
-    margin-top: 1rem;
-    width: clamp(180px, 60vw, 280px);
-    outline: none;
-    text-align: center;
-    letter-spacing: 0.05em;
-}
-
-.password-gate-card input:focus {
-    border-color: #ff0066;
-    box-shadow: 0 0 10px rgba(255, 0, 102, 0.55);
-}
-
-.password-error {
-    color: #ff0066;
-    min-height: 1.4em;
-    margin: 0.6rem 0 0;
-}
-
-.transition-overlay {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 1500;
-    opacity: 0;
-}
-
-.transition-overlay svg {
-    width: 100%;
-    height: 100%;
-    display: block;
-}
-
-.transition-path {
-    fill: none;
-    stroke: #e6c821;
-    stroke-width: 5;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    filter: drop-shadow(0 0 6px rgba(231, 217, 22, 0.85));
-    vector-effect: non-scaling-stroke;
-}
-
 :root {
-    --vh: 100%;
+  color-scheme: light;
+  --background: #f7f7f2;
+  --ink: #252d29;
+  --muted: #647068;
+  --accent: #28654c;
+  --line: #d9dfd5;
+  --intro-header-space: 6.8125rem;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--ink);
+  background: var(--background);
 }
 
-.section-content {
-    /* Stained / cathedral glass card.
-       Layers, in paint order:
-         1. Three radial highlights — facets catching light from different
-            directions, with one warm gold tint for cohesion.
-         2. Base linear gradient — dark in the middle for text legibility.
-       backdrop-filter chains:
-         - blur(2px)   — slight frost, keeps text readable.
-         - saturate    — warms the gold curve seen through the card.
-         - url(#glass-distortion) — SVG feTurbulence + feDisplacementMap
-           that warps the backdrop pixel positions, giving the rippled,
-           bumpy "imperfect glass" appearance. */
-    position: relative;
-    background:
-        radial-gradient(circle at 22% 24%, rgba(255, 255, 255, 0.08), transparent 38%),
-        radial-gradient(circle at 78% 70%, rgba(230, 200, 33, 0.08), transparent 42%),
-        radial-gradient(circle at 60% 12%, rgba(255, 255, 255, 0.05), transparent 30%),
-        linear-gradient(
-            135deg,
-            rgba(255, 255, 255, 0.04) 0%,
-            rgba(10, 10, 10, 0.30) 55%,
-            rgba(230, 200, 33, 0.05) 100%
-        );
-    backdrop-filter: blur(2px) saturate(120%) url(#glass-distortion);
-    -webkit-backdrop-filter: blur(2px) saturate(120%);
-    border: 1px solid rgba(230, 200, 33, 0.22);
-    border-radius: 14px;
-    padding: clamp(24px, 4vw, 48px);
-    box-shadow:
-        0 10px 40px rgba(0, 0, 0, 0.32),
-        inset 0 1px 0 rgba(255, 255, 255, 0.10),
-        inset 0 -1px 0 rgba(0, 0, 0, 0.25);
-    overflow: hidden;
+* { box-sizing: border-box; }
+html { scroll-padding-top: 2rem; scroll-snap-type: y proximity; scroll-behavior: smooth; }
+html.early-snap { scroll-snap-type: none; }
+html.is-snapping { scroll-behavior: auto; }
+body { margin: 0; }
+a { color: var(--accent); text-underline-offset: 0.25em; }
+a:hover { text-decoration-thickness: 2px; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 5px; border-radius: 2px; }
+::selection { background: #d6e7d9; }
+
+.page { width: min(100% - 4rem, 1020px); margin: 0 auto; }
+.skip-link { position: absolute; top: -5rem; left: 1rem; padding: 0.75rem 1rem; background: var(--background); z-index: 1; }
+.skip-link:focus { top: 1rem; }
+
+.site-header { display: flex; justify-content: space-between; align-items: center; gap: 2rem; padding: 2rem 0; border-bottom: 1px solid var(--line); scroll-snap-align: start; }
+.wordmark { font-family: Georgia, "Times New Roman", serif; font-size: 2rem; font-weight: 700; letter-spacing: -0.08em; color: var(--ink); text-decoration: none; }
+.wordmark span { color: var(--accent); }
+nav { display: flex; flex-wrap: wrap; gap: 1.75rem; }
+nav a { display: inline-flex; align-items: center; min-height: 44px; font-size: 0.875rem; color: var(--muted); text-decoration: none; }
+nav a:hover { color: var(--accent); text-decoration: underline; }
+
+.intro { display: grid; grid-template-columns: 1.35fr 1fr; align-items: center; gap: 2rem; padding: 5.5rem 0 5rem; min-height: calc(100vh - var(--intro-header-space)); min-height: calc(100svh - var(--intro-header-space)); scroll-snap-align: start; scroll-margin-top: var(--intro-header-space); }
+.intro-copy, .interests-list, .links-content { min-width: 0; }
+.eyebrow { font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin: 0 0 1.5rem; }
+h1 { font-family: Georgia, "Times New Roman", serif; font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 400; line-height: 1.05; letter-spacing: -0.045em; margin: 0 0 1.75rem; overflow-wrap: anywhere; }
+.accent { color: var(--accent); }
+.intro-text { max-width: 32rem; font-size: 1.0625rem; line-height: 1.75; color: var(--muted); margin: 0 0 0.875rem; }
+.text-link { display: inline-flex; gap: 0.625rem; align-items: center; margin-top: 1rem; font-size: 0.875rem; font-weight: 600; }
+.math-figure { margin: 0; padding-top: 1rem; }
+.lorenz-stage { position: relative; aspect-ratio: 420 / 380; }
+.math-figure img { width: 100%; height: auto; display: block; }
+.lorenz-stage.is-animated img { visibility: hidden; }
+.lorenz-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.math-figure figcaption { text-align: center; font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 0.625rem; color: var(--muted); margin-top: 0.75rem; }
+.math-figure figcaption span { color: var(--accent); }
+.motion-toggle { display: block; min-height: 44px; margin: 0.25rem auto 0; padding: 0.375rem 0.75rem; border: 0; border-radius: 3px; color: var(--accent); background: transparent; font: inherit; font-size: 0.6875rem; cursor: pointer; text-decoration: underline; text-underline-offset: 0.25em; }
+.motion-toggle[hidden] { display: none; }
+.motion-toggle:hover { background: #eaf0e7; }
+
+.content-section { display: grid; grid-template-columns: 1fr 2fr; align-content: center; gap: 3rem; border-top: 1px solid var(--line); padding: 2.5rem 0 3rem; min-height: 100vh; min-height: 100svh; scroll-snap-align: start; scroll-snap-stop: normal; }
+.section-heading { display: flex; align-items: baseline; gap: 1rem; }
+.section-number { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 0.625rem; color: var(--accent); }
+h2 { font-size: 1rem; line-height: 1.5; font-weight: 600; margin: 0; }
+.interest + .interest { margin-top: 1.75rem; }
+h3 { font-size: 0.9375rem; font-weight: 600; margin: 0 0 0.375rem; }
+.interest p, .conference-note { font-size: 0.9375rem; line-height: 1.7; color: var(--muted); margin: 0; }
+.conference-note { max-width: 35rem; margin-bottom: 1.5rem; }
+.resource-list { list-style: none; margin: 0; padding: 0; }
+.resource-list li { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.5rem 1rem; padding: 0.9375rem 0; border-bottom: 1px solid var(--line); font-size: 0.875rem; }
+.resource-list li:first-child { padding-top: 0; }
+.resource-list a { flex: 1 1 0; min-width: 0; font-weight: 600; line-height: 1.6; }
+.resource-list a span { display: inline-block; margin-left: 0.25rem; }
+.resource-list a .link-ending { margin-left: 0; white-space: nowrap; }
+.resource-label { color: var(--muted); }
+.resource-note { flex-shrink: 0; color: var(--muted); font-size: 0.75rem; }
+
+.site-footer { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem 1rem; border-top: 1px solid var(--line); padding: 1.5rem 0 2.5rem; font-size: 0.75rem; color: var(--muted); scroll-snap-align: end; }
+
+@media (max-width: 760px) {
+  :root { --intro-header-space: 5.3125rem; }
+  .page { width: min(100% - 2.5rem, 38rem); }
+  .site-header { padding: 1.25rem 0; gap: 1rem; }
+  nav { gap: 1.25rem; }
+  .intro { grid-template-columns: 1fr; padding: 3.5rem 0 2.5rem; gap: 1.75rem; }
+  h1 { font-size: clamp(2.5rem, 10vw, 4rem); }
+  .intro-text { font-size: 1rem; }
+  .math-figure { width: min(100%, 280px); justify-self: center; padding: 0; }
+  .content-section { grid-template-columns: 1fr; gap: 1.5rem; padding: 2rem 0; }
 }
 
-/* Subtle top highlight strip — mimics the way light catches on the upper
-   curved edge of beveled glass. Sits above the backdrop but below text. */
-.section-content::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    pointer-events: none;
-    background: linear-gradient(
-        180deg,
-        rgba(255, 255, 255, 0.06) 0%,
-        transparent 25%,
-        transparent 75%,
-        rgba(0, 0, 0, 0.10) 100%
-    );
-    z-index: 0;
+@media (max-width: 360px) {
+  .page { width: calc(100% - 2rem); }
+  nav { gap: 0.875rem; }
+  nav a { font-size: 0.8125rem; }
+  .eyebrow { font-size: 0.625rem; letter-spacing: 0.1em; }
 }
 
-.section-content > * {
-    position: relative;
-    z-index: 1;
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-snap-type: none; scroll-behavior: auto; }
 }
 
-@supports (--webkit-touch-callout: none) {
-    :root {
-        --vh: 100svh;
-    }
+@media print {
+  :root { --background: white; --ink: black; --muted: #444; }
+  .page { width: 100%; }
+  html { scroll-snap-type: none; scroll-behavior: auto; }
+  .intro, .content-section { min-height: 0; scroll-snap-align: none; }
+  .site-header, .math-figure, .skip-link { display: none; }
+  .intro { display: block; padding: 1rem 0 2rem; }
+  .content-section { align-content: start; break-inside: avoid; padding: 1.5rem 0; }
+  h1 { font-size: 3rem; }
 }

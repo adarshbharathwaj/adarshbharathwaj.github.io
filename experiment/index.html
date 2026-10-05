@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adarsh Bharathwaj</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+  <canvas id="bg-canvas" aria-hidden="true"></canvas>
+
+  <svg class="glass-defs" aria-hidden="true">
+    <defs>
+      <filter id="glass-distortion" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.009 0.013" numOctaves="2" seed="11" stitchTiles="stitch" />
+        <feDisplacementMap in="SourceGraphic" scale="38" />
+      </filter>
+    </defs>
+  </svg>
+  <header class="navbar">
+    <div class = "nav-character"></div>
+    <nav>
+      <ul>
+        <li><a href=#intro> Introduction</a></li>
+        <li><a href=#about> About Me</a></li>
+        <li><a href=#projects> Projects</a></li>
+        <li><a href=#thanks> Thanks</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <section id="intro" class="snap-section">
+      <div class="section-content">
+        <h1 class="section-title pixel-text">Introduction</h1>
+        <p class="section-text cyber-text"> Hello, my name is Adarsh Bharathwaj!</p>
+      </div>
+    </section>
+    <div class="transition-spacer" aria-hidden="true"></div>
+    <section id="about" class="snap-section">
+      <div class="section-content">
+        <h1 class="section-title pixel-text">About Me</h1>
+        <p class="section-text cyber-text">
+          I'm currently a Computer Science and Math major trying to learn more about Algorithm Theory and Machine Learning!
+        </p>
+        <p class="section-text cyber-text">
+          As you will see, I'm also a huge Game Development and Math nerd and like to incorporate projects around those as well!
+        </p>
+      </div>
+    </section>
+    <div class="transition-spacer" aria-hidden="true"></div>
+    <section id="projects" class="snap-section">
+      <div class="section-content">
+        <h1 class="section-title pixel-text">Projects</h1>
+        <p class="section-text cyber-text"> Will add soon!</p>
+      </div>
+    </section>
+    <div class="transition-spacer" aria-hidden="true"></div>
+    <section id="thanks" class="snap-section">
+      <div class="section-content">
+        <h1 class="section-title pixel-text"> Thanks!</h1>
+        <p class="section-text cyber-text"> Thanks for getting to learn a bit more about me!</p>
+        <p class="section-text cyber-text"> I would also like to thank IbraCreative, CodeMan38, and Kenney for the assets!</p>
+      </div>
+    </section>
+  </main>
+
+  <div class="transition-overlay" aria-hidden="true">
+    <svg id="transition-svg" viewBox="0 0 100 60" preserveAspectRatio="xMidYMid meet"></svg>
+  </div>
+
+  <script src="js/gsap.min.js"></script>
+  <script src="js/ScrollTrigger.min.js"></script>
+  <script type="module" src="js/scene.js"></script>
+  <script src="js/vivus.min.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
